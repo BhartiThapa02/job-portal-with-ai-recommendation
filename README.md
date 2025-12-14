@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🚀 JobPortal 2025
+# 🚀 Job Portal 2025
 
 ### **Modern AI-Powered Job Portal Platform**
 
@@ -94,22 +94,22 @@
 
 </div>
 
-### 🎬 **Demo Video**
+## 🎬 Demo Video
+<div>
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=LvIRAq3rj5g" target="_blank">
+    <img 
+      src="https://img.youtube.com/vi/LvIRAq3rj5g/0.jpg" 
+      alt="Demo Video" 
+      width="800"
+      style="border-radius: 10px;"
+    />
+  </a>
+</p>
 
-<div align="center">
-
-**Watch the full demo video to see all features in action!**
-
-<video width="100%" style="max-width: 800px; border-radius: 8px;" controls>
-  <source src="demo/Screen Recording 2025-12-14 123645.mp4" type="video/mp4">
-  Your browser does not support the video tag. 
-  <a href="demo/Screen Recording 2025-12-14 123645.mp4">Download the video here</a>
-</video>
-
-<br>
-
-**[📹 Direct Download](demo/Screen Recording 2025-12-14 123645.mp4)**
-
+<p align="center">
+  ▶️ Click the image to watch the full demo on YouTube
+</p>
 </div>
 
 
