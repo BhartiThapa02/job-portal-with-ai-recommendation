@@ -99,7 +99,7 @@
 <p align="center">
   <a href="https://www.youtube.com/watch?v=LvIRAq3rj5g" target="_blank">
     <img 
-      src="https://img.youtube.com/vi/LvIRAq3rj5g/0.jpg" 
+      src="demo/demo-video-thumbnail.png" 
       alt="Demo Video" 
       width="800"
       style="border-radius: 10px;"
