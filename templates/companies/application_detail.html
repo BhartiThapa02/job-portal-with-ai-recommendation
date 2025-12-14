@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Application Details - Company Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user me-2"></i>Candidate Information</h4>
+                </div>
+                <div class="card-body">
+                    {% if application.user.job_seeker_profile %}
+                        {% with profile=application.user.job_seeker_profile %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Name:</strong> {{ profile.first_name }} {{ profile.last_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Email:</strong> {{ application.user.email }}
+                            </div>
+                        </div>
+                        {% if profile.phone %}
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong>Phone:</strong> {{ profile.phone }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Location:</strong> {{ profile.location|default:"Not specified" }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile.bio %}
+                        <div class="mb-3">
+                            <strong>Bio:</strong>
+                            <p class="mt-2">{{ profile.bio }}</p>
+                        </div>
+                        {% endif %}
+                        {% if profile.skills %}
+                        <div class="mb-3">
+                            <strong>Skills:</strong>
+                            <div class="mt-2">
+                                {% for skill in profile.skills %}
+                                <span class="badge bg-secondary me-2">{{ skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endwith %}
+                    {% else %}
+                        <p><strong>Email:</strong> {{ application.user.email }}</p>
+                        <p class="text-muted">Profile not completed</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-file-alt me-2"></i>Cover Letter</h5>
+                </div>
+                <div class="card-body">
+                    {% if application.cover_letter %}
+                        <p>{{ application.cover_letter|linebreaks }}</p>
+                    {% else %}
+                        <p class="text-muted">No cover letter provided</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if application.user.job_seeker_profile.resume %}
+            <div class="card mb-4">
+                <div class="card-body">
+                    <a href="{% url 'companies:download_resume' application.id %}" class="btn btn-success">
+                        <i class="fas fa-download me-2"></i>Download Resume
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-briefcase me-2"></i>Job Information</h5>
+                </div>
+                <div class="card-body">
+                    <h6>{{ application.job.title }}</h6>
+                    <p class="text-muted mb-2">{{ application.job.company.name }}</p>
+                    <p class="mb-2">
+                        <i class="fas fa-map-marker-alt me-1"></i>{{ application.job.location }}
+                    </p>
+                    <p class="mb-0">
+                        <span class="badge bg-primary">{{ application.job.get_job_type_display }}</span>
+                        <span class="badge bg-info">{{ application.job.get_work_mode_display }}</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-cog me-2"></i>Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'companies:update_status' application.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select" required>
+                                <option value="applied" {% if application.status == 'applied' %}selected{% endif %}>Applied</option>
+                                <option value="shortlisted" {% if application.status == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                <option value="interview_scheduled" {% if application.status == 'interview_scheduled' %}selected{% endif %}>Interview Scheduled</option>
+                                <option value="rejected" {% if application.status == 'rejected' %}selected{% endif %}>Rejected</option>
+                                <option value="hired" {% if application.status == 'hired' %}selected{% endif %}>Hired</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interview Date (if applicable)</label>
+                            <input type="datetime-local" name="interview_date" class="form-control" value="{{ application.interview_date|date:'Y-m-d\TH:i' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Interview Location</label>
+                            <input type="text" name="interview_location" class="form-control" value="{{ application.interview_location|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Notes</label>
+                            <textarea name="notes" class="form-control" rows="3">{{ application.notes|default:'' }}</textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-2"></i>Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-comment me-2"></i>Send Message</h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{% url 'companies:message_candidate' application.id %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <textarea name="message" class="form-control" rows="4" placeholder="Type your message..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-paper-plane me-2"></i>Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

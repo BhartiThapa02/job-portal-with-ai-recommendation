@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <h1 class="hero-title">Find Your Dream Job Today!</h1>
+        <p class="hero-subtitle">Connecting Talent with Opportunity: Your Gateway to Career Success</p>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+            <form method="GET" action="{% url 'jobs:search' %}">
+                <div class="row g-0 align-items-stretch">
+                    <div class="col-md-3">
+                        <input type="text" name="q" class="search-input w-100 h-100" placeholder="Job Title or Company" value="{{ request.GET.q }}">
+                    </div>
+                    <div class="col-md-3">
+                        <select name="location" class="search-select w-100 h-100">
+                            <option value="">Select Location</option>
+                            <option value="New York" {% if request.GET.location == 'New York' %}selected{% endif %}>New York</option>
+                            <option value="San Francisco" {% if request.GET.location == 'San Francisco' %}selected{% endif %}>San Francisco</option>
+                            <option value="Los Angeles" {% if request.GET.location == 'Los Angeles' %}selected{% endif %}>Los Angeles</option>
+                            <option value="Chicago" {% if request.GET.location == 'Chicago' %}selected{% endif %}>Chicago</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <select name="job_type" class="search-select w-100 h-100">
+                            <option value="">Select Category</option>
+                            <option value="full_time" {% if request.GET.job_type == 'full_time' %}selected{% endif %}>Full-time</option>
+                            <option value="part_time" {% if request.GET.job_type == 'part_time' %}selected{% endif %}>Part-time</option>
+                            <option value="internship" {% if request.GET.job_type == 'internship' %}selected{% endif %}>Internship</option>
+                            <option value="contract" {% if request.GET.job_type == 'contract' %}selected{% endif %}>Contract</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <button type="submit" class="btn-search-home w-100 h-100">
+                            <i class="fas fa-search me-2"></i>Search Job
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Jobs Section -->
+<section class="recent-jobs-section">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Recent Jobs Available</h2>
+                <p class="section-subtitle">Discover the latest job opportunities from top companies across various industries. Find your perfect match today.</p>
+            </div>
+            <a href="{% url 'jobs:search' %}" class="view-all-link">View all</a>
+        </div>
+
+        {% for job in recent_jobs %}
+        <div class="job-card">
+            <div class="job-header">
+                <span class="job-time">{{ job.created_at|timesince }} ago</span>
+                {% if user.is_authenticated and user.is_job_seeker %}
+                <form method="POST" action="{% url 'jobs:save' job.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-bookmark">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="job-content">
+                <div class="job-content-left">
+                    <div class="company-logo-wrapper">
+                        {# Randomized Unsplash image seeded per company name + loop index to diversify #}
+
+                        <img src="https://source.unsplash.com/random/60x60?office,company,workplace,business&sig={{ job.company.id }}{{ forloop.counter }}&{{ job.company.name|urlencode }}" alt="{{ job.company.name }}" class="company-logo"
+                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=60&h=60&fit=crop';">
+                    </div>
+                    <div class="job-info">
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <p class="company-name">{{ job.company.name }}</p>
+                        <div class="job-meta">
+                            <span class="job-meta-item">
+                                <i class="fas fa-briefcase"></i>
+                                {{ job.get_job_type_display }}
+                            </span>
+                            <span class="job-meta-item">
+                                <i class="far fa-clock"></i>
+                                {{ job.get_work_mode_display }}
+                            </span>
+                            {% if job.salary_min %}
+                            <span class="job-meta-item">
+                                <i class="far fa-credit-card"></i>
+                                ${{ job.salary_min }}-${{ job.salary_max }}
+                            </span>
+                            {% endif %}
+                            <span class="job-meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ job.location }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'jobs:detail' job.id %}" class="btn-job-details">Job Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <p>No jobs available at the moment.</p>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
+

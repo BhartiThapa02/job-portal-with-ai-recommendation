@@ -1,0 +1,78 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Jobs - Company Dashboard{% endblock %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-briefcase me-2"></i>My Job Postings</h2>
+        <a href="{% url 'companies:create_job' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Post New Job
+        </a>
+    </div>
+    
+    {% if jobs %}
+        <div class="row">
+            {% for job in jobs %}
+            <div class="col-lg-6 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h5 class="mb-2">
+                                    <a href="{% url 'jobs:detail' job.id %}" class="text-decoration-none">{{ job.title }}</a>
+                                </h5>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-map-marker-alt me-1"></i>{{ job.location }}
+                                </p>
+                            </div>
+                            <div>
+                                {% if job.is_active %}
+                                    <span class="badge bg-success">Active</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <span class="badge bg-primary me-2">{{ job.get_job_type_display }}</span>
+                            <span class="badge bg-info me-2">{{ job.get_work_mode_display }}</span>
+                            <span class="badge bg-warning">{{ job.get_experience_level_display }}</span>
+                        </div>
+                        
+                        <p class="text-muted small mb-3">
+                            <i class="fas fa-eye me-1"></i>{{ job.views }} views | 
+                            <i class="fas fa-users me-1"></i>{{ job.application_count }} applications
+                        </p>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'companies:edit_job' job.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                            <a href="{% url 'companies:delete_job' job.id %}" class="btn btn-sm btn-outline-danger">
+                                <i class="fas fa-trash me-1"></i>Delete
+                            </a>
+                            <a href="{% url 'jobs:detail' job.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-briefcase fa-4x text-muted mb-4"></i>
+            <h3>No Jobs Posted Yet</h3>
+            <p class="text-muted">Start by posting your first job opportunity!</p>
+            <a href="{% url 'companies:create_job' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-plus me-2"></i>Post Your First Job
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

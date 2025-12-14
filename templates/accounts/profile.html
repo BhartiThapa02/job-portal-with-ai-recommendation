@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Profile - Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- User Profile Hero Section -->
+<header class="user-profile-hero">
+    <div class="container">
+        <div class="profile-header-content">
+            <div class="profile-avatar-large">
+                {% if profile and profile.profile_picture %}
+                    <img src="{{ profile.profile_picture.url }}" alt="User Profile">
+                {% else %}
+                    <div class="profile-avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <a href="{% url 'accounts:update_profile' %}" class="btn-edit-avatar" title="Upload Profile Picture">
+                    <i class="fas fa-camera"></i>
+                </a>
+            </div>
+            <div class="profile-header-info">
+                <h1 class="profile-name">
+                    {% if profile %}
+                        {{ profile.first_name }} {{ profile.last_name }}
+                    {% else %}
+                        {{ user.email }}
+                    {% endif %}
+                </h1>
+                {% if profile %}
+                <p class="profile-title">{{ profile.bio|truncatewords:10 }}</p>
+                {% endif %}
+                <div class="profile-location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span>{% if profile %}{{ profile.location }}{% else %}Not set{% endif %}</span>
+                </div>
+                <div class="profile-actions">
+                    <a href="{% url 'accounts:update_profile' %}" class="btn-edit-profile">
+                        <i class="fas fa-edit"></i>
+                        Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</header>
+
+<!-- Main Content -->
+<main class="user-profile-section">
+    <div class="container">
+        <div class="row g-4">
+            <!-- Personal Information Card -->
+            <div class="col-12 col-lg-8">
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <h2 class="card-title-custom">
+                            <i class="fas fa-user"></i>
+                            Personal Information
+                        </h2>
+                        <a href="{% url 'accounts:update_profile' %}" class="btn-edit-card">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                    </div>
+                    {% if profile %}
+                    <div class="profile-details-grid">
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-envelope"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Email Address</span>
+                                <span class="detail-value">{{ user.email }}</span>
+                            </div>
+                        </div>
+                        {% if profile.phone %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-phone"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Phone Number</span>
+                                <span class="detail-value">{{ user.phone }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile.date_of_birth %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-birthday-cake"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Date of Birth</span>
+                                <span class="detail-value">{{ profile.date_of_birth|date:"F d, Y" }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if profile.gender %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-venus-mars"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Gender</span>
+                                <span class="detail-value">{{ profile.get_gender_display }}</span>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div class="detail-item">
+                            <div class="detail-icon">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="detail-content">
+                                <span class="detail-label">Experience</span>
+                                <span class="detail-value">{{ profile.experience_years }}+ Years</span>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p>Please complete your profile <a href="{% url 'accounts:update_profile' %}">here</a>.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Resume Card -->
+            {% if profile %}
+            <div class="col-12">
+                <div class="profile-card">
+                    <div class="card-header-custom">
+                        <h2 class="card-title-custom">
+                            <i class="fas fa-file-alt"></i>
+                            Resume
+                        </h2>
+                        <div class="card-actions">
+                            <a href="{% url 'accounts:update_profile' %}" class="btn-upload-resume">
+                                <i class="fas fa-upload"></i>
+                                Upload New
+                            </a>
+                        </div>
+                    </div>
+                    {% if profile.resume %}
+                    <div class="resume-content">
+                        <div class="resume-preview">
+                            <div class="resume-document">
+                                <div class="document-icon-large">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <div class="document-details">
+                                    <h4 class="document-name">{{ profile.resume.name|slice:"13:" }}</h4>
+                                    <p class="document-meta">
+                                        <span>{{ profile.resume.size|filesizeformat }}</span>
+                                        <span>•</span>
+                                        <span>Last updated: {{ profile.updated_at|date:"F d, Y" }}</span>
+                                    </p>
+                                </div>
+                                <div class="document-buttons">
+                                    <a href="{{ profile.resume.url }}" class="btn-document-action" title="Download" download>
+                                        <i class="fas fa-download"></i>
+                                    </a>
+                                    <a href="{{ profile.resume.url }}" class="btn-document-action" title="Preview" target="_blank">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% else %}
+                    <p>No resume uploaded. <a href="{% url 'accounts:update_profile' %}">Upload your resume</a> to apply for jobs.</p>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}
+

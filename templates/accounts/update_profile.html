@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Update Profile - Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'user_profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container" style="margin-top: 100px; padding: 40px 0;">
+    <div class="row justify-content-center">
+        <div class="col-12 col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2>Update Profile</h2>
+                </div>
+                <div class="card-body">
+                    {% if messages %}
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Please fix the following errors:</strong>
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items %}
+                                    {% for error in errors %}
+                                        <li>{{ field|title }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    <form method="POST" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        <div class="row">
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input type="text" name="first_name" class="form-control" value="{{ form.first_name.value|default:'' }}" required>
+                            </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" name="last_name" class="form-control" value="{{ form.last_name.value|default:'' }}" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Date of Birth</label>
+                            <input type="date" name="date_of_birth" class="form-control" value="{{ form.date_of_birth.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Gender</label>
+                            <select name="gender" class="form-control">
+                                <option value="">Select Gender</option>
+                                <option value="male" {% if form.gender.value == 'male' %}selected{% endif %}>Male</option>
+                                <option value="female" {% if form.gender.value == 'female' %}selected{% endif %}>Female</option>
+                                <option value="other" {% if form.gender.value == 'other' %}selected{% endif %}>Other</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Profile Picture</label>
+                            <input type="file" name="profile_picture" class="form-control" accept="image/*" id="id_profile_picture">
+                            {% if profile.profile_picture %}
+                                <div class="mt-2">
+                                    <small class="form-text text-muted">Current: </small>
+                                    <img src="{{ profile.profile_picture.url }}" alt="Current profile picture" class="img-thumbnail" style="max-width: 150px; max-height: 150px; display: block; margin-top: 5px;">
+                                    <small class="form-text text-muted d-block mt-1">
+                                        <a href="{{ profile.profile_picture.url }}" target="_blank">View full size</a>
+                                    </small>
+                                </div>
+                            {% endif %}
+                            {% if form.profile_picture.errors %}
+                                <div class="text-danger small">{{ form.profile_picture.errors }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Resume (PDF/DOC)</label>
+                            <input type="file" name="resume" class="form-control" accept=".pdf,.doc,.docx">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Bio</label>
+                            <textarea name="bio" class="form-control" rows="5">{{ form.bio.value|default:'' }}</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Location</label>
+                            <input type="text" name="location" class="form-control" value="{{ form.location.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">LinkedIn URL</label>
+                            <input type="url" name="linkedin_url" class="form-control" value="{{ form.linkedin_url.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">GitHub URL</label>
+                            <input type="url" name="github_url" class="form-control" value="{{ form.github_url.value|default:'' }}">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Experience (Years)</label>
+                            <input type="number" name="experience_years" class="form-control" value="{{ form.experience_years.value|default:0 }}" min="0">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Profile</button>
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary">Cancel</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

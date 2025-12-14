@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Applications - Job Portal{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .application-card {
+        border: none;
+        border-radius: 10px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+    }
+    .application-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+    }
+    .status-badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+    .status-applied { background-color: #e3f2fd; color: #1976d2; }
+    .status-shortlisted { background-color: #fff3e0; color: #f57c00; }
+    .status-interview_scheduled { background-color: #f3e5f5; color: #7b1fa2; }
+    .status-rejected { background-color: #ffebee; color: #c62828; }
+    .status-hired { background-color: #e8f5e9; color: #2e7d32; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="mb-3"><i class="fas fa-briefcase me-2"></i>My Applications</h2>
+            <p class="text-muted">Track all your job applications and their status</p>
+        </div>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="GET" class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Filter by Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Statuses</option>
+                                <option value="applied" {% if status_filter == 'applied' %}selected{% endif %}>Applied</option>
+                                <option value="shortlisted" {% if status_filter == 'shortlisted' %}selected{% endif %}>Shortlisted</option>
+                                <option value="interview_scheduled" {% if status_filter == 'interview_scheduled' %}selected{% endif %}>Interview Scheduled</option>
+                                <option value="rejected" {% if status_filter == 'rejected' %}selected{% endif %}>Rejected</option>
+                                <option value="hired" {% if status_filter == 'hired' %}selected{% endif %}>Hired</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary me-2"><i class="fas fa-filter me-1"></i>Filter</button>
+                            <a href="{% url 'applications:my_applications' %}" class="btn btn-outline-secondary"><i class="fas fa-times me-1"></i>Clear</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Applications List -->
+    <div class="row">
+        {% if applications %}
+            {% for application in applications %}
+            <div class="col-12">
+                <div class="card application-card">
+                    <div class="card-body">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <h5 class="card-title mb-2">
+                                    <a href="{% url 'jobs:detail' application.job.id %}" class="text-decoration-none">
+                                        {{ application.job.title }}
+                                    </a>
+                                </h5>
+                                <p class="text-muted mb-2">
+                                    <i class="fas fa-building me-2"></i>{{ application.job.company.name }}
+                                    <span class="ms-3"><i class="fas fa-map-marker-alt me-2"></i>{{ application.job.location }}</span>
+                                </p>
+                                <p class="mb-2">
+                                    <span class="badge bg-secondary me-2">{{ application.job.get_work_mode_display }}</span>
+                                    <span class="badge bg-info">{{ application.job.get_job_type_display }}</span>
+                                </p>
+                                <small class="text-muted">
+                                    <i class="fas fa-calendar me-1"></i>Applied on {{ application.applied_at|date:"F d, Y" }}
+                                </small>
+                            </div>
+                            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                <span class="status-badge status-{{ application.status }}">
+                                    {{ application.get_status_display }}
+                                </span>
+                                <div class="mt-3">
+                                    <a href="{% url 'applications:detail' application.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12">
+                <div class="card text-center py-5">
+                    <div class="card-body">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No applications found</h5>
+                        <p class="text-muted">You haven't applied to any jobs yet.</p>
+                        <a href="{% url 'jobs:search' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-search me-2"></i>Browse Jobs
+                        </a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

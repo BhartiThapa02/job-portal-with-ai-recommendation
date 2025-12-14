@@ -1,0 +1,170 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Search Jobs - Job Portal{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'job.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="recent-jobs-section" style="margin-top: 80px; padding: 40px 0;">
+    <div class="container">
+        <div class="section-header">
+            <div>
+                <h2 class="section-title">Job Search Results</h2>
+                <p class="section-subtitle">Found {{ jobs.paginator.count }} jobs matching your criteria</p>
+            </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <form method="GET" action="{% url 'jobs:search' %}" id="job-search-form">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6 col-lg-3">
+                            <input type="text" name="q" class="form-control" placeholder="Job Title or Company" value="{{ query }}">
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-2">
+                            <input type="text" name="location" class="form-control" placeholder="Location" value="{{ filters.location }}">
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-2">
+                            <select name="work_mode" class="form-select">
+                                <option value="">Work Mode</option>
+                                <option value="remote" {% if filters.work_mode == 'remote' %}selected{% endif %}>Remote</option>
+                                <option value="hybrid" {% if filters.work_mode == 'hybrid' %}selected{% endif %}>Hybrid</option>
+                                <option value="onsite" {% if filters.work_mode == 'onsite' %}selected{% endif %}>Onsite</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-2">
+                            <select name="job_type" class="form-select">
+                                <option value="">Job Type</option>
+                                <option value="full_time" {% if filters.job_type == 'full_time' %}selected{% endif %}>Full-time</option>
+                                <option value="part_time" {% if filters.job_type == 'part_time' %}selected{% endif %}>Part-time</option>
+                                <option value="internship" {% if filters.job_type == 'internship' %}selected{% endif %}>Internship</option>
+                                <option value="contract" {% if filters.job_type == 'contract' %}selected{% endif %}>Contract</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-12 col-lg-3">
+                            <button type="submit" class="btn-search w-100">Search</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Job Listings -->
+        {% for job in jobs %}
+        <div class="job-card">
+            <div class="job-header">
+                <span class="job-time">{{ job.created_at|timesince }} ago</span>
+                {% if user.is_authenticated and user.is_job_seeker %}
+                <form method="POST" action="{% url 'jobs:save' job.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-bookmark">
+                        <i class="far fa-bookmark"></i>
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+            <div class="job-content">
+                <div class="job-content-left">
+                    <div class="company-logo-wrapper">
+                        {# Randomized Unsplash image seeded per company name + loop index to diversify #}
+                        <img src="https://source.unsplash.com/collection/190727/60x60?sig={{ job.company.id }}{{ forloop.counter }}&{{ job.company.name|urlencode }}" alt="{{ job.company.name }}" class="company-logo"
+                             onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=60&h=60&fit=crop';">
+                    </div>
+                    <div class="job-info">
+                        <h3 class="job-title">{{ job.title }}</h3>
+                        <p class="company-name">{{ job.company.name }}</p>
+                        <div class="job-meta">
+                            <span class="job-meta-item">
+                                <i class="fas fa-briefcase"></i>
+                                {{ job.get_job_type_display }}
+                            </span>
+                            <span class="job-meta-item">
+                                <i class="far fa-clock"></i>
+                                {{ job.get_work_mode_display }}
+                            </span>
+                            {% if job.salary_min %}
+                            <span class="job-meta-item">
+                                <i class="far fa-credit-card"></i>
+                                ${{ job.salary_min }}-${{ job.salary_max }}
+                            </span>
+                            {% endif %}
+                            <span class="job-meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                {{ job.location }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <a href="{% url 'jobs:detail' job.id %}" class="btn-job-details">Job Details</a>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info">
+            <p>No jobs found matching your criteria. Try adjusting your search filters.</p>
+        </div>
+        {% endfor %}
+
+        <!-- Pagination -->
+        {% if jobs.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if jobs.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ jobs.previous_page_number }}{% if query %}&q={{ query }}{% endif %}">Previous</a>
+                </li>
+                {% endif %}
+                {% for num in jobs.paginator.page_range %}
+                <li class="page-item {% if jobs.number == num %}active{% endif %}">
+                    <a class="page-link" href="?page={{ num }}{% if query %}&q={{ query }}{% endif %}">{{ num }}</a>
+                </li>
+                {% endfor %}
+                {% if jobs.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ jobs.next_page_number }}{% if query %}&q={{ query }}{% endif %}">Next</a>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</section>
+
+<script>
+// Track search in localStorage
+document.addEventListener('DOMContentLoaded', function() {
+    const searchForm = document.getElementById('job-search-form');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function() {
+            const formData = new FormData(searchForm);
+            const query = formData.get('q') || '';
+            const filters = {
+                location: formData.get('location') || '',
+                work_mode: formData.get('work_mode') || '',
+                job_type: formData.get('job_type') || '',
+                experience_level: formData.get('experience_level') || '',
+                salary_min: formData.get('salary_min') || ''
+            };
+            
+            if (query || Object.values(filters).some(v => v)) {
+                LocalStorageManager.addSearchHistory(query, filters);
+            }
+        });
+    }
+
+    // Track job views when clicking job cards
+    document.querySelectorAll('.job-card a[href*="/jobs/"]').forEach(function(link) {
+        link.addEventListener('click', function() {
+            const jobId = this.href.match(/\/jobs\/(\d+)/)?.[1];
+            if (jobId) {
+                LocalStorageManager.trackJobView(parseInt(jobId));
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+

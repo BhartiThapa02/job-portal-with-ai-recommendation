@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Job Portal - Find Your Dream Job{% endblock %}</title>
+    {% load static %}
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" sizes="32x32" href="{% static 'images/job_portal.png' %}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{% static 'images/job_portal.png' %}">
+    <link rel="shortcut icon" href="{% static 'images/job_portal.png' %}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{% static 'images/job_portal.png' %}">
+    <!-- Stylesheets -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="{% static 'auth-modals.css' %}">
+    <link rel="stylesheet" href="{% static 'homepage.css' %}">
+    <link rel="stylesheet" href="{% static 'responsive.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'jobs:home' %}">
+                <i class="fas fa-briefcase"></i>
+                Job Portal
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'jobs:home' %}">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'jobs:search' %}">Jobs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">Contact Us</a>
+                    </li>
+                </ul>
+                <div class="d-flex align-items-center gap-2 gap-md-3 flex-wrap">
+                    {% if user.is_authenticated %}
+                        {% if user.is_job_seeker %}
+                            <a href="{% url 'jobs:recommendations' %}" class="btn btn-login text-white d-none d-md-inline-flex">
+                                <i class="fas fa-star me-1"></i><span class="d-none d-lg-inline">Recommendations</span>
+                            </a>
+                            <a href="{% url 'applications:my_applications' %}" class="btn btn-login text-white d-none d-md-inline-flex">
+                                <i class="fas fa-briefcase me-1"></i><span class="d-none d-lg-inline">My Applications</span>
+                            </a>
+                            <a href="{% url 'accounts:profile' %}" class="user-profile-link">
+                                <div class="user-profile-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                            </a>
+                        {% elif user.is_employer %}
+                            <a href="{% url 'companies:dashboard' %}" class="btn btn-login text-white d-none d-md-inline-flex">
+                                <i class="fas fa-tachometer-alt me-1"></i><span class="d-none d-lg-inline">Dashboard</span>
+                            </a>
+                            <a href="{% url 'companies:profile' %}" class="user-profile-link">
+                                <div class="user-profile-avatar">
+                                    <i class="fas fa-user-circle"></i>
+                                </div>
+                            </a>
+                        {% endif %}
+                        <a href="{% url 'accounts:logout' %}" class="btn btn-register text-white">Logout</a>
+                    {% else %}
+                        <button class="btn btn-login" data-bs-toggle="modal" data-bs-target="#loginModal">Login</button>
+                        <button class="btn btn-register" data-bs-toggle="modal" data-bs-target="#registerModal">Register</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Messages -->
+    {% if messages %}
+        <div class="container mt-5 pt-5">
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+    <!-- Main Content -->
+    {% block content %}{% endblock %}
+
+    <!-- Footer -->
+    {% block footer %}
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-5">
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-logo">
+                        <i class="fas fa-briefcase"></i>
+                        <h3>Job</h3>
+                    </div>
+                    <p class="footer-description">Your trusted partner in career growth. We connect talented professionals with leading companies 
+                    to create meaningful career opportunities and drive success for both job seekers and employers.</p>
+                </div>
+                <div class="col-lg-2 col-md-6">
+                    <h4>Company</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Partners</a></li>
+                        <li><a href="#">For Candidates</a></li>
+                        <li><a href="#">For Employers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-6">
+                    <h4>Job Categories</h4>
+                    <ul class="footer-links">
+                        <li><a href="#">Telecommunications</a></li>
+                        <li><a href="#">Hotels & Tourism</a></li>
+                        <li><a href="#">Construction</a></li>
+                        <li><a href="#">Education</a></li>
+                        <li><a href="#">Financial Services</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <h4>Newsletter</h4>
+                    <p class="footer-description">Subscribe to our newsletter and stay updated with the latest job opportunities, career tips, and industry news.</p>
+                    <input type="email" class="newsletter-input" placeholder="Email Address">
+                    <button class="btn-subscribe">Subscribe now</button>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="copyright">© Copyright Job Portal 2025.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms & Conditions</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+    {% endblock %}
+
+    <!-- Login Modal -->
+    {% if not user.is_authenticated %}
+    {% include 'accounts/login_modal.html' %}
+    {% include 'accounts/register_modal.html' %}
+    {% endif %}
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    {% load static %}
+    <script src="{% static 'localStorage.js' %}"></script>
+    <script>
+        // Get CSRF token from cookie
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        const csrftoken = getCookie('csrftoken');
+
+        // Ensure all forms have CSRF token
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if CSRF token exists in forms
+            document.querySelectorAll('form[method="POST"]').forEach(function(form) {
+                const csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (!csrfInput && csrftoken) {
+                    // Add CSRF token if missing
+                    const hiddenInput = document.createElement('input');
+                    hiddenInput.type = 'hidden';
+                    hiddenInput.name = 'csrfmiddlewaretoken';
+                    hiddenInput.value = csrftoken;
+                    form.insertBefore(hiddenInput, form.firstChild);
+                }
+            });
+        });
+
+        function togglePassword(btn) {
+            const targetSelector = btn.getAttribute('data-target');
+            const input = targetSelector ? document.querySelector(targetSelector) : btn.closest('.password-input-wrapper')?.querySelector('input');
+            if (!input) return;
+            const icon = btn.querySelector('i');
+            const toText = input.type === 'password';
+            input.type = toText ? 'text' : 'password';
+            if (icon) {
+                icon.classList.toggle('fa-eye', !toText);
+                icon.classList.toggle('fa-eye-slash', toText);
+            }
+        }
+
+        // Event delegation (works for modal + page)
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.btn-toggle-password');
+            if (!btn) return;
+            e.preventDefault();
+            togglePassword(btn);
+        });
+
+        // Direct binding after DOM ready (extra safety for some browsers)
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('.btn-toggle-password').forEach(function (btn) {
+                btn.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    togglePassword(btn);
+                });
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

@@ -1,0 +1,143 @@
+<!-- Register Modal -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content register-modal-content">
+            <div class="modal-header register-modal-header">
+                <h2 class="modal-title" id="registerModalLabel">
+                    <i class="fas fa-user-plus"></i>
+                    Create Account
+                </h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body register-modal-body">
+                <p class="register-subtitle">Join thousands of professionals finding their dream jobs</p>
+                <form method="POST" action="{% url 'accounts:register' %}" class="register-form">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group-modal">
+                                <label for="registerUserType" class="form-label-modal">
+                                    <i class="fas fa-user-tag"></i>
+                                    I am a
+                                </label>
+                                <select name="user_type" class="form-control-modal" id="registerUserType" required autocomplete="on">
+                                    <option value="job_seeker">Job Seeker</option>
+                                    <option value="employer">Employer</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group-modal">
+                                <label for="registerUsername" class="form-label-modal">
+                                    <i class="fas fa-user"></i>
+                                    Username
+                                </label>
+                                <input type="text" name="username" class="form-control-modal" id="registerUsername" placeholder="Choose a username (optional)" autocomplete="username">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group-modal">
+                        <label for="registerEmail" class="form-label-modal">
+                            <i class="fas fa-envelope"></i>
+                            Email Address
+                        </label>
+                        <input type="email" name="email" class="form-control-modal" id="registerEmail" placeholder="Enter your email" required autocomplete="email">
+                    </div>
+                    <div class="form-group-modal">
+                        <label for="registerPhone" class="form-label-modal">
+                            <i class="fas fa-phone"></i>
+                            Phone Number
+                        </label>
+                        <input type="tel" name="phone" class="form-control-modal" id="registerPhone" placeholder="Enter your phone number" autocomplete="tel">
+                    </div>
+                    <div class="form-group-modal">
+                        <label for="registerPassword" class="form-label-modal">
+                            <i class="fas fa-lock"></i>
+                            Password
+                        </label>
+                        <div class="password-input-wrapper position-relative">
+                            <input type="password" name="password1" class="form-control-modal" id="registerPassword" placeholder="Create a password" required autocomplete="new-password">
+                            <input type="hidden" name="password" id="registerPasswordHidden" value="">
+                            <button type="button" class="btn-toggle-password position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent" data-target="#registerPassword" id="toggleRegisterPassword" style="z-index: 10; cursor: pointer; background: transparent !important;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-group-modal">
+                        <label for="registerConfirmPassword" class="form-label-modal">
+                            <i class="fas fa-lock"></i>
+                            Confirm Password
+                        </label>
+                        <div class="password-input-wrapper position-relative">
+                            <input type="password" name="password2" class="form-control-modal" id="registerConfirmPassword" placeholder="Confirm your password" required autocomplete="new-password">
+                            <button type="button" class="btn-toggle-password position-absolute end-0 top-50 translate-middle-y me-2 border-0 bg-transparent" data-target="#registerConfirmPassword" id="toggleRegisterConfirmPassword" style="z-index: 10; cursor: pointer; background: transparent !important;">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="form-check-modal">
+                        <input type="checkbox" class="form-check-input-modal" id="agreeTerms" required>
+                        <label class="form-check-label-modal" for="agreeTerms">
+                            I agree to the <a href="#">Terms & Conditions</a> and <a href="#">Privacy Policy</a>
+                        </label>
+                    </div>
+                    <button type="submit" class="btn-register-submit">
+                        <i class="fas fa-user-plus"></i>
+                        Create Account
+                    </button>
+                </form>
+                <div class="modal-divider">
+                    <span>Or sign up with</span>
+                </div>
+                <div class="social-login-buttons">
+                    <button class="btn-social-login">
+                        <i class="fab fa-google"></i>
+                        Google
+                    </button>
+                    <button class="btn-social-login">
+                        <i class="fab fa-linkedin-in"></i>
+                        LinkedIn
+                    </button>
+                    <button class="btn-social-login">
+                        <i class="fab fa-facebook-f"></i>
+                        Facebook
+                    </button>
+                </div>
+                <div class="modal-footer-text">
+                    <p>Already have an account? <a href="#" data-bs-dismiss="modal" data-bs-toggle="modal" data-bs-target="#loginModal">Sign in</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    function bindToggle(btnSelector, inputSelector) {
+        const btn = document.querySelector(btnSelector);
+        const input = document.querySelector(inputSelector);
+        if (!btn || !input) return;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const toText = input.type === 'password';
+            input.type = toText ? 'text' : 'password';
+            const icon = btn.querySelector('i');
+            if (icon) {
+                icon.classList.toggle('fa-eye', !toText);
+                icon.classList.toggle('fa-eye-slash', toText);
+            }
+        });
+    }
+    bindToggle('#toggleRegisterPassword', '#registerPassword');
+    bindToggle('#toggleRegisterConfirmPassword', '#registerConfirmPassword');
+
+    // Keep hidden password field in sync to satisfy any backend expecting `password`
+    const p1 = document.querySelector('#registerPassword');
+    const hidden = document.querySelector('#registerPasswordHidden');
+    if (p1 && hidden) {
+        const sync = () => { hidden.value = p1.value || ''; };
+        p1.addEventListener('input', sync);
+        sync();
+    }
+});
+</script>

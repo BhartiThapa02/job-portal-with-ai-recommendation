@@ -1,0 +1,169 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Job Recommendations - Job Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .recommendations-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+        margin-top: 70px;
+    }
+    .recommendation-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        transition: transform 0.3s;
+        position: relative;
+    }
+    .recommendation-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+    }
+    .match-score {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 15px;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+    .match-reasons {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 10px;
+        margin-top: 15px;
+    }
+    .match-reasons ul {
+        margin-bottom: 0;
+        padding-left: 20px;
+    }
+    .match-reasons li {
+        margin-bottom: 5px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Header -->
+<div class="recommendations-header">
+    <div class="container text-center">
+        <h1><i class="fas fa-star me-3"></i>Job Recommendations</h1>
+        {% if use_ai %}
+            <p class="lead"><i class="fas fa-robot me-2"></i>AI-powered job matches based on your resume analysis</p>
+            <div class="alert alert-info mt-3" style="max-width: 600px; margin: 20px auto 0;">
+                <i class="fas fa-info-circle me-2"></i>
+                These recommendations are generated using Hugging Face AI models that analyze your resume content and match it with job descriptions.
+            </div>
+        {% else %}
+            <p class="lead">Smart job matches based on your profile and preferences</p>
+            {% if not has_resume %}
+                <div class="alert alert-warning mt-3" style="max-width: 600px; margin: 20px auto 0;">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Upload your resume to get AI-powered recommendations based on your skills and experience!
+                    <a href="{% url 'accounts:update_profile' %}" class="alert-link">Upload Resume</a>
+                </div>
+            {% endif %}
+        {% endif %}
+    </div>
+</div>
+
+<div class="container mt-5 mb-5">
+    {% if recommendations %}
+        <div class="row">
+            {% for rec in recommendations %}
+            <div class="col-lg-6 mb-4">
+                <div class="card recommendation-card">
+                    <div class="match-score">
+                        <i class="fas fa-percentage me-1"></i>
+                        {% if use_ai %}
+                            {{ rec.match_percentage|floatformat:1 }}% Match
+                        {% else %}
+                            {{ rec.score|floatformat:0 }}% Match
+                        {% endif %}
+                        {% if use_ai %}
+                            <span class="badge bg-success ms-2" style="font-size: 0.7rem;">AI</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-body p-4">
+                        <h4 class="mb-2">
+                            <a href="{% url 'jobs:detail' rec.job.id %}" class="text-decoration-none">
+                                {{ rec.job.title }}
+                            </a>
+                        </h4>
+                        <p class="text-muted mb-3">
+                            <i class="fas fa-building me-2"></i>{{ rec.job.company.name }}
+                            <span class="ms-3"><i class="fas fa-map-marker-alt me-1"></i>{{ rec.job.location }}</span>
+                        </p>
+                        
+                        <div class="job-meta mb-3">
+                            <span class="badge bg-primary me-2">
+                                <i class="fas fa-briefcase me-1"></i>{{ rec.job.get_job_type_display }}
+                            </span>
+                            <span class="badge bg-info me-2">
+                                <i class="far fa-clock me-1"></i>{{ rec.job.get_work_mode_display }}
+                            </span>
+                            <span class="badge bg-warning">
+                                <i class="fas fa-user-tie me-1"></i>{{ rec.job.get_experience_level_display }}
+                            </span>
+                        </div>
+                        
+                        {% if rec.job.salary_min %}
+                        <p class="mb-3">
+                            <i class="fas fa-dollar-sign me-2 text-success"></i>
+                            <strong>{{ rec.job.salary_currency }} {{ rec.job.salary_min|floatformat:0 }} - {{ rec.job.salary_max|floatformat:0 }}</strong>
+                        </p>
+                        {% endif %}
+                        
+                        {% if use_ai %}
+                            <div class="match-reasons">
+                                <strong><i class="fas fa-check-circle me-2 text-success"></i>AI Match Score:</strong>
+                                <p class="mt-2 mb-0">
+                                    This job matches <strong>{{ rec.match_percentage|floatformat:1 }}%</strong> with your resume content based on semantic similarity analysis.
+                                </p>
+                            </div>
+                        {% elif rec.reason %}
+                        <div class="match-reasons">
+                            <strong><i class="fas fa-check-circle me-2 text-success"></i>Why this job matches:</strong>
+                            <p class="mt-2 mb-0">{{ rec.reason }}</p>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex gap-2 mt-3">
+                            <a href="{% url 'jobs:detail' rec.job.id %}" class="btn btn-primary flex-fill">
+                                <i class="fas fa-eye me-2"></i>View Details
+                            </a>
+                            <a href="{% url 'jobs:apply' rec.job.id %}" class="btn btn-success">
+                                <i class="fas fa-paper-plane me-2"></i>Apply Now
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-star fa-4x text-muted mb-4"></i>
+            <h3>No Recommendations Yet</h3>
+            <p class="text-muted">
+                {% if not has_resume %}
+                    Upload your resume to get AI-powered job recommendations!
+                {% else %}
+                    Complete your profile to get personalized job recommendations!
+                {% endif %}
+            </p>
+            <a href="{% url 'accounts:update_profile' %}" class="btn btn-primary mt-3">
+                <i class="fas fa-user-edit me-2"></i>{% if not has_resume %}Upload Resume{% else %}Complete Profile{% endif %}
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

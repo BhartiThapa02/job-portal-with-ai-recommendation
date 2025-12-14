@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Application Details - Job Portal{% endblock %}
+
+{% block extra_css %}
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+    .application-detail-card {
+        border: none;
+        border-radius: 12px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+    }
+    .status-badge {
+        padding: 10px 20px;
+        border-radius: 25px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    .status-applied { background-color: #e3f2fd; color: #1976d2; }
+    .status-shortlisted { background-color: #fff3e0; color: #f57c00; }
+    .status-interview_scheduled { background-color: #f3e5f5; color: #7b1fa2; }
+    .status-rejected { background-color: #ffebee; color: #c62828; }
+    .status-hired { background-color: #e8f5e9; color: #2e7d32; }
+    .status-withdrawn { background-color: #f5f5f5; color: #757575; }
+    .info-row {
+        padding: 12px 0;
+        border-bottom: 1px solid #e0e0e0;
+    }
+    .info-row:last-child {
+        border-bottom: none;
+    }
+    .info-label {
+        font-weight: 600;
+        color: #666;
+        margin-bottom: 4px;
+    }
+    .info-value {
+        color: #333;
+        font-size: 1rem;
+    }
+    .message-card {
+        border-left: 4px solid #0d6efd;
+        margin-bottom: 15px;
+        border-radius: 8px;
+    }
+    .message-card.employer {
+        border-left-color: #198754;
+    }
+    .message-card.job-seeker {
+        border-left-color: #0dcaf0;
+    }
+    .cover-letter-box {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        padding: 20px;
+        border-left: 4px solid #0d6efd;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container mt-5 pt-4">
+    <!-- Back Button -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <a href="{% url 'applications:my_applications' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Applications
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Main Application Details -->
+        <div class="col-lg-8">
+            <!-- Application Status Card -->
+            <div class="card application-detail-card">
+                <div class="card-header bg-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-file-alt me-2"></i>Application Details</h4>
+                        <span class="status-badge status-{{ application.status }}">
+                            {{ application.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Job Information -->
+                    <div class="mb-4">
+                        <h5 class="mb-3">
+                            <a href="{% url 'jobs:detail' application.job.id %}" class="text-decoration-none">
+                                {{ application.job.title }}
+                            </a>
+                        </h5>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-building me-2"></i>Company</div>
+                            <div class="info-value">{{ application.job.company.name }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-map-marker-alt me-2"></i>Location</div>
+                            <div class="info-value">{{ application.job.location }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-briefcase me-2"></i>Work Mode</div>
+                            <div class="info-value">{{ application.job.get_work_mode_display }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="far fa-clock me-2"></i>Job Type</div>
+                            <div class="info-value">{{ application.job.get_job_type_display }}</div>
+                        </div>
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-calendar me-2"></i>Applied On</div>
+                            <div class="info-value">{{ application.applied_at|date:"F d, Y g:i A" }}</div>
+                        </div>
+                        {% if application.interview_date %}
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-calendar-check me-2"></i>Interview Date</div>
+                            <div class="info-value">{{ application.interview_date|date:"F d, Y g:i A" }}</div>
+                        </div>
+                        {% endif %}
+                        {% if application.interview_location %}
+                        <div class="info-row">
+                            <div class="info-label"><i class="fas fa-map-marker-alt me-2"></i>Interview Location</div>
+                            <div class="info-value">{{ application.interview_location }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Cover Letter -->
+                    {% if application.cover_letter %}
+                    <div class="cover-letter-box mb-4">
+                        <h6 class="mb-3"><i class="fas fa-envelope me-2"></i>Cover Letter</h6>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ application.cover_letter }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Notes from Recruiter -->
+                    {% if application.notes %}
+                    <div class="alert alert-info">
+                        <h6 class="mb-2"><i class="fas fa-sticky-note me-2"></i>Notes from Recruiter</h6>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ application.notes }}</p>
+                    </div>
+                    {% endif %}
+
+                    <!-- Withdraw Button (for job seekers only) -->
+                    {% if user.is_job_seeker and application.user == user and application.status not in 'rejected,hired' %}
+                    <div class="mt-4">
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#withdrawModal">
+                            <i class="fas fa-times-circle me-2"></i>Withdraw Application
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Messages Section -->
+            <div class="card application-detail-card">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Messages</h5>
+                </div>
+                <div class="card-body">
+                    {% if application_messages %}
+                        <div class="messages-container" style="max-height: 400px; overflow-y: auto;">
+                            {% for message in application_messages %}
+                            <div class="card message-card {% if message.sender.is_employer %}employer{% else %}job-seeker{% endif %}">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div>
+                                            <strong>
+                                                {% if message.sender.is_employer %}
+                                                    <i class="fas fa-building me-2"></i>{{ message.sender.company.name }}
+                                                {% else %}
+                                                    <i class="fas fa-user me-2"></i>{{ message.sender.get_full_name|default:message.sender.email }}
+                                                {% endif %}
+                                            </strong>
+                                        </div>
+                                        <small class="text-muted">{{ message.created_at|date:"M d, Y g:i A" }}</small>
+                                    </div>
+                                    <p class="mb-0" style="white-space: pre-wrap;">{{ message.message }}</p>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted text-center py-4">
+                            <i class="fas fa-inbox fa-2x mb-3 d-block"></i>
+                            No messages yet.
+                        </p>
+                    {% endif %}
+
+                    <!-- Reply Form (for job seekers) -->
+                    {% if user.is_job_seeker and application.user == user %}
+                    <div class="mt-4">
+                        <h6 class="mb-3">Send a Message</h6>
+                        <form method="POST" action="{% url 'applications:reply_message' application.id %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <textarea name="message" class="form-control" rows="4" placeholder="Type your message here..." required></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Send Message
+                            </button>
+                        </form>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card application-detail-card">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <a href="{% url 'jobs:detail' application.job.id %}" class="btn btn-outline-primary w-100 mb-2">
+                        <i class="fas fa-eye me-2"></i>View Job Details
+                    </a>
+                    <a href="{% url 'jobs:detail' application.job.id %}#apply" class="btn btn-outline-success w-100 mb-2">
+                        <i class="fas fa-building me-2"></i>View Company Profile
+                    </a>
+                </div>
+            </div>
+
+            <!-- Application Timeline -->
+            <div class="card application-detail-card mt-3">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Application Timeline</h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>Application Submitted</strong>
+                                <div class="text-muted small">{{ application.applied_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        {% if application.status == 'shortlisted' or application.status == 'interview_scheduled' or application.status == 'hired' %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-check-circle text-success"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>Shortlisted</strong>
+                                <div class="text-muted small">{{ application.updated_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if application.status == 'interview_scheduled' or application.status == 'hired' %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-calendar-check text-primary"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>Interview Scheduled</strong>
+                                {% if application.interview_date %}
+                                <div class="text-muted small">{{ application.interview_date|date:"M d, Y" }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if application.status == 'hired' %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-trophy text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>Hired</strong>
+                                <div class="text-muted small">{{ application.updated_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if application.status == 'rejected' %}
+                        <div class="d-flex mb-3">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-times-circle text-danger"></i>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <strong>Application Rejected</strong>
+                                <div class="text-muted small">{{ application.updated_at|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Withdraw Confirmation Modal -->
+{% if user.is_job_seeker and application.user == user %}
+<div class="modal fade" id="withdrawModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Withdraw Application</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to withdraw your application for <strong>{{ application.job.title }}</strong> at <strong>{{ application.job.company.name }}</strong>?</p>
+                <p class="text-muted">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="POST" action="{% url 'applications:withdraw' application.id %}" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Yes, Withdraw</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+
